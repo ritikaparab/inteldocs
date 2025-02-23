@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 600px;
+                 background-color: #222222;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "skyblue", "font": {"color": "white"}, "id": "Miraj \u2022 Miraj\nCERTIFICATIONS", "label": "Miraj \u2022 Miraj\nCERTIFICATIONS", "shape": "dot", "title": "Miraj \u2022 Miraj\nCERTIFICATIONS"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Kurla (W", "label": "Kurla (W", "shape": "dot", "title": "Kurla (W"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Amul", "label": "Amul", "shape": "dot", "title": "Amul"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Miraj \u2022 Miraj", "label": "Miraj \u2022 Miraj", "shape": "dot", "title": "Miraj \u2022 Miraj"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Vidyavihar", "label": "Vidyavihar", "shape": "dot", "title": "Vidyavihar"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Utilized HTML", "label": "Utilized HTML", "shape": "dot", "title": "Utilized HTML"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Sakshi Kadam", "label": "Sakshi Kadam", "shape": "dot", "title": "Sakshi Kadam"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Mumbai", "label": "Mumbai", "shape": "dot", "title": "Mumbai"}, {"color": "skyblue", "font": {"color": "white"}, "id": "CSS", "label": "CSS", "shape": "dot", "title": "CSS"}, {"color": "skyblue", "font": {"color": "white"}, "id": "PHP", "label": "PHP", "shape": "dot", "title": "PHP"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Customer Relationship Management", "label": "Customer Relationship Management", "shape": "dot", "title": "Customer Relationship Management"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Maharashtra \u2022", "label": "Maharashtra \u2022", "shape": "dot", "title": "Maharashtra \u2022"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Data", "label": "Data", "shape": "dot", "title": "Data"}, {"color": "skyblue", "font": {"color": "white"}, "id": "JavaScript", "label": "JavaScript", "shape": "dot", "title": "JavaScript"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Master of Management Studies\nKohinoor Business School", "label": "Master of Management Studies\nKohinoor Business School", "shape": "dot", "title": "Master of Management Studies\nKohinoor Business School"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Post Graduation", "label": "Post Graduation", "shape": "dot", "title": "Post Graduation"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Bachelor of Science in Microbiology\nWillingdon College", "label": "Bachelor of Science in Microbiology\nWillingdon College", "shape": "dot", "title": "Bachelor of Science in Microbiology\nWillingdon College"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Sangli \u2022", "label": "Sangli \u2022", "shape": "dot", "title": "Sangli \u2022"}, {"color": "skyblue", "font": {"color": "white"}, "id": "Cambridge School", "label": "Cambridge School", "shape": "dot", "title": "Cambridge School"}, {"color": "skyblue", "font": {"color": "white"}, "id": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level", "label": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level", "shape": "dot", "title": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"color": "skyblue", "font": {"color": "white"}, "id": "English", "label": "English", "shape": "dot", "title": "English"}, {"color": "skyblue", "font": {"color": "white"}, "id": "30", "label": "30", "shape": "dot", "title": "30"}, {"color": "skyblue", "font": {"color": "white"}, "id": "A2 Buffalo Milk", "label": "A2 Buffalo Milk", "shape": "dot", "title": "A2 Buffalo Milk"}, {"color": "skyblue", "font": {"color": "white"}, "id": "2 months", "label": "2 months", "shape": "dot", "title": "2 months"}]);
+                  edges = new vis.DataSet([{"from": "Miraj \u2022 Miraj\nCERTIFICATIONS", "to": "Kurla (W"}, {"from": "Miraj \u2022 Miraj\nCERTIFICATIONS", "to": "Amul"}, {"from": "Miraj \u2022 Miraj\nCERTIFICATIONS", "to": "Miraj \u2022 Miraj"}, {"from": "Miraj \u2022 Miraj\nCERTIFICATIONS", "to": "Vidyavihar"}, {"from": "Miraj \u2022 Miraj\nCERTIFICATIONS", "to": "Utilized HTML"}, {"from": "Miraj \u2022 Miraj\nCERTIFICATIONS", "to": "Sakshi Kadam"}, {"from": "Kurla (W", "to": "Amul"}, {"from": "Kurla (W", "to": "Miraj \u2022 Miraj"}, {"from": "Kurla (W", "to": "Vidyavihar"}, {"from": "Kurla (W", "to": "Utilized HTML"}, {"from": "Kurla (W", "to": "Sakshi Kadam"}, {"from": "Amul", "to": "Miraj \u2022 Miraj"}, {"from": "Amul", "to": "Vidyavihar"}, {"from": "Amul", "to": "Utilized HTML"}, {"from": "Amul", "to": "Sakshi Kadam"}, {"from": "Miraj \u2022 Miraj", "to": "Vidyavihar"}, {"from": "Miraj \u2022 Miraj", "to": "Utilized HTML"}, {"from": "Miraj \u2022 Miraj", "to": "Sakshi Kadam"}, {"from": "Vidyavihar", "to": "Utilized HTML"}, {"from": "Vidyavihar", "to": "Sakshi Kadam"}, {"from": "Utilized HTML", "to": "Sakshi Kadam"}, {"from": "CSS", "to": "PHP"}, {"from": "CSS", "to": "Customer Relationship Management"}, {"from": "CSS", "to": "Maharashtra \u2022"}, {"from": "CSS", "to": "Data"}, {"from": "CSS", "to": "JavaScript"}, {"from": "CSS", "to": "Master of Management Studies\nKohinoor Business School"}, {"from": "CSS", "to": "Post Graduation"}, {"from": "CSS", "to": "Bachelor of Science in Microbiology\nWillingdon College"}, {"from": "CSS", "to": "Sangli \u2022"}, {"from": "CSS", "to": "Cambridge School"}, {"from": "CSS", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "PHP", "to": "Customer Relationship Management"}, {"from": "PHP", "to": "Maharashtra \u2022"}, {"from": "PHP", "to": "Data"}, {"from": "PHP", "to": "JavaScript"}, {"from": "PHP", "to": "Master of Management Studies\nKohinoor Business School"}, {"from": "PHP", "to": "Post Graduation"}, {"from": "PHP", "to": "Bachelor of Science in Microbiology\nWillingdon College"}, {"from": "PHP", "to": "Sangli \u2022"}, {"from": "PHP", "to": "Cambridge School"}, {"from": "PHP", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "Customer Relationship Management", "to": "Maharashtra \u2022"}, {"from": "Customer Relationship Management", "to": "Data"}, {"from": "Customer Relationship Management", "to": "JavaScript"}, {"from": "Customer Relationship Management", "to": "Master of Management Studies\nKohinoor Business School"}, {"from": "Customer Relationship Management", "to": "Post Graduation"}, {"from": "Customer Relationship Management", "to": "Bachelor of Science in Microbiology\nWillingdon College"}, {"from": "Customer Relationship Management", "to": "Sangli \u2022"}, {"from": "Customer Relationship Management", "to": "Cambridge School"}, {"from": "Customer Relationship Management", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "Maharashtra \u2022", "to": "Data"}, {"from": "Maharashtra \u2022", "to": "JavaScript"}, {"from": "Maharashtra \u2022", "to": "Master of Management Studies\nKohinoor Business School"}, {"from": "Maharashtra \u2022", "to": "Post Graduation"}, {"from": "Maharashtra \u2022", "to": "Bachelor of Science in Microbiology\nWillingdon College"}, {"from": "Maharashtra \u2022", "to": "Sangli \u2022"}, {"from": "Maharashtra \u2022", "to": "Cambridge School"}, {"from": "Maharashtra \u2022", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "Data", "to": "JavaScript"}, {"from": "Data", "to": "Master of Management Studies\nKohinoor Business School"}, {"from": "Data", "to": "Post Graduation"}, {"from": "Data", "to": "Bachelor of Science in Microbiology\nWillingdon College"}, {"from": "Data", "to": "Sangli \u2022"}, {"from": "Data", "to": "Cambridge School"}, {"from": "Data", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "JavaScript", "to": "Master of Management Studies\nKohinoor Business School"}, {"from": "JavaScript", "to": "Post Graduation"}, {"from": "JavaScript", "to": "Bachelor of Science in Microbiology\nWillingdon College"}, {"from": "JavaScript", "to": "Sangli \u2022"}, {"from": "JavaScript", "to": "Cambridge School"}, {"from": "JavaScript", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "Master of Management Studies\nKohinoor Business School", "to": "Post Graduation"}, {"from": "Master of Management Studies\nKohinoor Business School", "to": "Bachelor of Science in Microbiology\nWillingdon College"}, {"from": "Master of Management Studies\nKohinoor Business School", "to": "Sangli \u2022"}, {"from": "Master of Management Studies\nKohinoor Business School", "to": "Cambridge School"}, {"from": "Master of Management Studies\nKohinoor Business School", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "Post Graduation", "to": "Bachelor of Science in Microbiology\nWillingdon College"}, {"from": "Post Graduation", "to": "Sangli \u2022"}, {"from": "Post Graduation", "to": "Cambridge School"}, {"from": "Post Graduation", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "Bachelor of Science in Microbiology\nWillingdon College", "to": "Sangli \u2022"}, {"from": "Bachelor of Science in Microbiology\nWillingdon College", "to": "Cambridge School"}, {"from": "Bachelor of Science in Microbiology\nWillingdon College", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "Sangli \u2022", "to": "Cambridge School"}, {"from": "Sangli \u2022", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}, {"from": "Cambridge School", "to": "MS-Excel\nPrinciples of Leadership Course\nSearch Engine Marketing Course\nAnalyzing Your Target Audience\nBeginner-Level"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Assistant AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Top Bar styles */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #6a1b9a;
+            color: white;
+            padding: 10px 20px;
+            width: 100%;
+        }
+
+        .top-bar .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .top-bar .file-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .top-bar .file-buttons button,
+        .top-bar .file-buttons input {
+            margin-left: 10px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .top-bar .file-buttons button {
+            background-color: #ffffff;
+            color: #6a1b9a;
+            border: none;
+        }
+
+        .top-bar .file-buttons button:hover {
+            background-color: #d1c4e9;
+        }
+
+        .top-bar .file-buttons input {
+            display: none; /* Hide file input button */
+        }
+
+        /* File List and Preview Section */
+        .file-preview-container {
+            display: flex;
+            flex-direction: row;
+            padding: 20px;
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* Left Section for File List */
+        .file-list-container {
+            background-color: #e0e0e0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 30%;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            background-color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item .file-name {
+            font-size: 12px;
+            color: #333;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .file-item .remove-btn {
+            background-color: #ff1744;
+            color: white;
+            font-size: 12px;
+            border: none;
+            border-radius: 5px;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .file-item .remove-btn:hover {
+            background-color: #d50000;
+        }
+
+        /* Graph Section */
+        .graph-section {
+            width: 70%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #222222;
+        }
+
+        .graph-section iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Preview Section */
+        .preview-section {
+            background-color: #fff;
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .preview-section iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo">PDF Assistant AI</div>
+        <div class="file-buttons">
+            <button id="upload-btn">Upload</button>
+            <input type="file" id="file-input" accept=".pdf" onchange="handleFileUpload()" />
+            <button class="ai-assistant-btn" onclick="toggleChat()">Chatbot</button>
+        </div>
+    </div>
+
+    <div class="file-preview-container">
+        <!-- Left section for File List -->
+        <div class="file-list-container" id="file-list">
+            <!-- Uploaded files will appear here -->
+        </div>
+
+        <!-- Right section for Graph -->
+        <div class="graph-section" id="graph-section">
+            <!-- Graph iframe -->
+            <iframe src="" id="graph-frame" style="display:none;"></iframe>
+        </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="preview-section" id="preview-section">
+        <h3>File Preview</h3>
+        <iframe src="" id="file-preview"></iframe>
+    </div>
+
+    <!-- Chatbox Overlay -->
+    <div class="chatbox-overlay" id="chatbox-overlay">
+        <div class="chatbox-container">
+            <div class="chatbox-header">
+                <span>AI Assistant</span>
+                <button class="close-btn" onclick="toggleChat()">×</button>
+            </div>
+            <div id="chat-box"></div>
+            <input type="text" id="question-input" placeholder="Ask a question..." />
+            <button id="send-btn" onclick="sendQuestion()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Trigger the file input when the "Upload" button is clicked
+        document.getElementById("upload-btn").onclick = function() {
+            document.getElementById("file-input").click();  // Trigger the file input
+        };
+
+        let fileList = [];
+
+        // Handle file upload
+        function handleFileUpload() {
+            const fileInput = document.getElementById("file-input");
+            const file = fileInput.files[0];
+            const fileName = file.name;
+
+            fileList.push(fileName);
+            updateFileList();
+            
+            // Generate preview and graph section after file upload
+            displayFilePreview(file);
+            generateGraph(file);
+        }
+
+        // Update file list on the left
+        function updateFileList() {
+            const fileListContainer = document.getElementById("file-list");
+            fileListContainer.innerHTML = ""; // Clear existing files
+
+            fileList.forEach((fileName, index) => {
+                const fileItem = document.createElement("div");
+                fileItem.classList.add("file-item");
+
+                const fileNameDiv = document.createElement("div");
+                fileNameDiv.classList.add("file-name");
+                fileNameDiv.textContent = fileName;
+
+                const removeBtn = document.createElement("button");
+                removeBtn.classList.add("remove-btn");
+                removeBtn.textContent = "X";
+                removeBtn.onclick = () => {
+                    fileList.splice(index, 1);
+                    updateFileList();
+                };
+
+                fileItem.appendChild(fileNameDiv);
+                fileItem.appendChild(removeBtn);
+                fileListContainer.appendChild(fileItem);
+            });
+        }
+
+        // Display PDF preview
+   
+            // Display PDF preview
+            function displayFilePreview(file) {
+                const filePreview = document.getElementById("file-preview");
+                const previewSection = document.getElementById("preview-section");
+        
+                // Create a URL for the uploaded PDF
+                const fileURL = URL.createObjectURL(file);
+        
+                // Set the source of the preview iframe to the file URL
+                filePreview.src = fileURL;
+        
+                // Make sure the preview section is visible
+                previewSection.style.display = "block";
+            }
+   
+        
+        
+
+        // Generate graph (for simplicity, we'll just toggle the visibility of graph section here)
+        function generateGraph(file) {
+            const graphSection = document.getElementById("graph-section");
+            const graphFrame = document.getElementById("graph-frame");
+
+            // Set the graph source (this could be dynamically generated based on the uploaded file)
+            // For this example, just loading a placeholder graph page
+            const graphUrl = "static/knowledge_graph.html";  // Replace with the actual graph generation logic
+            graphFrame.src = graphUrl;
+            graphSection.style.display = "block";  // Show the graph section
+        }
+
+        // Toggle chatbot visibility
+        function toggleChat() {
+            const chatboxOverlay = document.getElementById("chatbox-overlay");
+            chatboxOverlay.style.display = chatboxOverlay.style.display === "flex" ? "none" : "flex";
+        }
+
+        // Send question to chatbot
+        function sendQuestion() {
+            const questionInput = document.getElementById("question-input");
+            const chatBox = document.getElementById("chat-box");
+
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("message", "user-message");
+            userMessage.textContent = questionInput.value;
+            chatBox.appendChild(userMessage);
+
+            const botMessage = document.createElement("div");
+            botMessage.classList.add("message", "bot-message");
+            botMessage.textContent = "This is a response from the bot.";
+            chatBox.appendChild(botMessage);
+
+            questionInput.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>

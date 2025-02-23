@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Assistance AI</title>
+    <style>
+        /* Add your existing styles here */
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <div class="logo">IntelDOC</div>
+    <div class="file-buttons">
+        <button onclick="triggerFileUpload()">Choose File</button>
+        <input type="file" id="file-input" accept=".pdf" multiple onchange="handleFileSelection()" />
+        <button onclick="uploadPDF()">Upload File</button>
+    </div>
+    <button class="ai-assistant-btn" onclick="toggleChat()">AI ASSISTANT</button>
+</div>
+
+<!-- Chatbot Overlay -->
+<div class="chatbox-overlay" id="chatbox-overlay">
+    <div class="chatbox-container">
+        <div class="chatbox-header">
+            <div>AI ASSISTANT</div>
+            <button class="close-btn" onclick="closeChat()">X</button>
+        </div>
+
+        <!-- Chat Box -->
+        <div id="chat-box"></div>
+        <input type="text" id="question-input" placeholder="Ask your question...">
+        <button id="send-btn" onclick="sendQuestion()">Send</button>
+    </div>
+</div>
+
+<!-- File List and Preview Container -->
+<div class="file-preview-container">
+    <div class="file-list-container" id="file-list-container"></div>
+    <div class="preview-box" id="preview-box">
+        <h2>File Previews</h2>
+        <div id="file-previews"></div>
+    </div>
+</div>
+
+<script>
+    let uploadedFiles = [];
+
+    // Trigger file upload dialog
+    function triggerFileUpload() {
+        document.getElementById('file-input').click();
+    }
+
+    // Handle multiple file selections
+    function handleFileSelection() {
+        const fileInput = document.getElementById('file-input');
+        const files = Array.from(fileInput.files);
+
+        files.forEach(file => {
+            if (!uploadedFiles.find(f => f.name === file.name)) {
+                uploadedFiles.push(file);
+                updateFileList();
+                updatePreview(file);
+            }
+        });
+    }
+
+    // Update the file list display
+    function updateFileList() {
+        const fileListContainer = document.getElementById('file-list-container');
+        fileListContainer.innerHTML = '';
+
+        uploadedFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.classList.add('file-item');
+            fileItem.onclick = () => openFileInNewTab(file);
+
+            const fileName = document.createElement('span');
+            fileName.classList.add('file-name');
+            fileName.textContent = file.name;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.classList.add('remove-btn');
+            removeBtn.textContent = 'X';
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                removeFile(index);
+            };
+
+            fileItem.appendChild(fileName);
+            fileItem.appendChild(removeBtn);
+
+            fileListContainer.appendChild(fileItem);
+        });
+    }
+
+    // Remove a file from the list
+    function removeFile(index) {
+        uploadedFiles.splice(index, 1);
+        updateFileList();
+        updatePreview();
+    }
+
+    // Update the preview of all uploaded files
+    function updatePreview(file = null) {
+        const previewContainer = document.getElementById('file-previews');
+        if (file) {
+            const filePreview = document.createElement('div');
+            filePreview.classList.add('pdf-preview');
+            filePreview.innerHTML = `<h3>${file.name}</h3><canvas id="pdf-canvas-${file.name}"></canvas>`;
+            previewContainer.appendChild(filePreview);
+
+            const canvas = document.getElementById(`pdf-canvas-${file.name}`);
+            const ctx = canvas.getContext('2d');
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const loadingTask = pdfjsLib.getDocument(event.target.result);
+                loadingTask.promise.then(pdf => {
+                    pdf.getPage(1).then(page => {
+                        const scale = 0.3;
+                        const viewport = page.getViewport({ scale: scale });
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        page.render({
+                            canvasContext: ctx,
+                            viewport: viewport
+                        });
+                    });
+                });
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    // Open the file in a new tab (from the preview section)
+    function openFileInNewTab(file) {
+        const fileURL = URL.createObjectURL(file);
+        window.open(fileURL, '_blank');
+    }
+
+    // Handle the AI assistant's chat toggling
+    function toggleChat() {
+        const chatOverlay = document.getElementById('chatbox-overlay');
+        chatOverlay.style.display = (chatOverlay.style.display === 'none' || !chatOverlay.style.display) ? 'flex' : 'none';
+    }
+
+    // Close the AI assistant chat
+    function closeChat() {
+        const chatOverlay = document.getElementById('chatbox-overlay');
+        chatOverlay.style.display = 'none';
+    }
+
+    // Send question to AI assistant and summarize PDF content
+    function sendQuestion() {
+        const questionInput = document.getElementById('question-input');
+        const question = questionInput.value.trim();
+        const chatBox = document.getElementById('chat-box');
+        
+        if (question) {
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('message', 'user-message');
+            userMessage.textContent = question;
+            chatBox.appendChild(userMessage);
+
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message', 'bot-message');
+
+            // Check for questions related to file summarization
+            if (question.toLowerCase().includes('summarize') || question.toLowerCase().includes('summary')) {
+                // Summarize all uploaded PDFs
+                summarizeUploadedFiles().then(summary => {
+                    botMessage.textContent = summary;
+                    chatBox.appendChild(botMessage);
+                });
+            } else {
+                botMessage.textContent = `I'm sorry, I can only summarize PDF files.`;
+                chatBox.appendChild(botMessage);
+            }
+
+            questionInput.value = ''; // Clear input after sending
+        }
+    }
+
+    // Function to extract and summarize the content of uploaded PDF files
+    async function summarizeUploadedFiles() {
+        let summary = '';
+
+        // Loop through uploaded files and summarize their content
+        for (const file of uploadedFiles) {
+            const textContent = await extractTextFromPDF(file);
+            const shortSummary = textContent.slice(0, 500) + '...'; // Just a basic summary by slicing the first 500 characters
+            summary += `<strong>${file.name}:</strong><br>${shortSummary}<br><br>`;
+        }
+
+        return summary || 'No files available for summarization.';
+    }
+
+    // Function to extract text from PDF using PDF.js
+    function extractTextFromPDF(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const loadingTask = pdfjsLib.getDocument(event.target.result);
+                loadingTask.promise.then(pdf => {
+                    let text = '';
+                    let pagePromises = [];
+                    
+                    // Loop through all pages and extract text
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        pagePromises.push(pdf.getPage(i).then(page => {
+                            return page.getTextContent().then(content => {
+                                text += content.items.map(item => item.str).join(' ') + ' ';
+                            });
+                        }));
+                    }
+
+                    Promise.all(pagePromises).then(() => {
+                        resolve(text);
+                    }).catch(reject);
+                });
+            };
+
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        });
+    }
+</script>
+
+</body>
+</html>
